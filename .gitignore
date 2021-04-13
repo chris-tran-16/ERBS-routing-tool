@@ -1,0 +1,8 @@
+.ipynb_checkpoints
+
+*.ipynb
+*pycache*
+
+.idea
+
+real_api_key.txt
