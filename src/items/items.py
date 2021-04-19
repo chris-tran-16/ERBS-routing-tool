@@ -8,6 +8,8 @@ class ItemList:
     def __init__(self):
 
         self.all_items = None
+        self.all_items_by_name = None
+        self.spawn_dict = None
 
     def populate_items(self, data_folder="data/", api_key="", api_key_file=None):
 
@@ -94,7 +96,33 @@ class ItemList:
         for item_code in all_items:
             all_items[item_code].recursive_item_components(all_items)
 
+        # make consumable and drop items "everywhere"
+        # TODO: special items
+        all_spawn_areas = set([d["areaType"] for d in spawn_data])
+        all_spawn_codes = set([d["areaCode"] for d in spawn_data])
+        for item_code in all_items:
+            if all_items[item_code].name == "Leather" \
+                    or all_items[item_code].name == "Branch" \
+                    or all_items[item_code].name == "Stone" \
+                    or all_items[item_code].name == "Water":
+                all_items[item_code].spawnArea = list(all_spawn_areas)
+                # spawn_dict[item_code] = {"areaType": list(all_spawn_areas), "areaCode": list(all_spawn_codes),
+                #                          "dropCount": [30] * len(all_spawn_areas)}
+                spawn_dict[item_code] = {"areaType": [], "areaCode": [], "dropCount": []}
+
         self.all_items = all_items
+        self.all_items_by_name = {self.all_items[code].name: self.all_items[code] for code in all_items}
+
+        self.spawn_dict = spawn_dict
+
+    def find_item_code_by_name(self, name):
+        item = [i for i in self.all_items if self.all_items[i].name == name]
+        if len(item) > 1:
+            item_code = item[0]
+        else:
+            item_code = -1
+
+        return item_code
 
 
 class Item:
@@ -123,12 +151,13 @@ class Item:
         pass
 
     def _from_dict(self, item_dict):
-        self.code = item_dict["code"]
-        self.name = item_dict["name"]
-        self.itemType = item_dict["itemType"]
-        self.itemGrade = item_dict["itemGrade"]
-        self.makeMaterial1 = item_dict["makeMaterial1"]
-        self.makeMaterial2 = item_dict["makeMaterial2"]
+        if item_dict is not None:
+            self.code = item_dict["code"]
+            self.name = item_dict["name"]
+            self.itemType = item_dict["itemType"]
+            self.itemGrade = item_dict["itemGrade"]
+            self.makeMaterial1 = item_dict["makeMaterial1"]
+            self.makeMaterial2 = item_dict["makeMaterial2"]
 
     def get_english_name(self, english_dict):
         if self.code in english_dict:
@@ -163,7 +192,11 @@ class Weapon(Item):
 
     def __init__(self, item_dict=None):
         super().__init__(item_dict)
+
         self.weaponType = ""
+
+        if item_dict is not None:
+            self.from_dict(item_dict)
 
     def from_dict(self, item_dict):
         self._from_dict(item_dict)
@@ -176,6 +209,9 @@ class Armor(Item):
     def __init__(self, item_dict=None):
         super().__init__(item_dict)
         self.armorType = ""
+
+        if item_dict is not None:
+            self.from_dict(item_dict)
 
     def from_dict(self, item_dict):
         self._from_dict(item_dict)
