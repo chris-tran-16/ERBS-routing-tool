@@ -2,6 +2,31 @@ from src.util.fetch import DataFetcher
 import json
 import os
 
+area_rename = {
+    "Harbor": "Dock",
+    "SandyBeach": "Beach",
+    "Downtown": "Avenue"
+}
+
+item_rename = {
+    "메스": "Scalpel",
+    "스위스아미나이프": "Swiss Army Knife",
+    "다마스커스가시": "Damascus Steel Thorn",
+    "피스브링어": "Peacebringer",
+    "아르기로톡소스": "Argyrotoxus",
+    "아그니": "Agni",
+    "케르베로스": "Cerberus",
+    "천사의고리": "Elysian Halo",
+    "고장난시계": "Broken Watch",
+    "틴달로스의팔찌": "Tindalos Band",
+    "타키온브레이스": "Tachyon Brace",
+    "캐리비안장식총": "Decorative Flintlock",
+    "해적의증표": "Buccaneer Doubloon",
+    "요명월": "Lunar Embrace",
+    "정찰드론": "Recon Drone",
+    "EMP드론": "EMP Drone",
+}
+
 
 class ItemList:
 
@@ -54,6 +79,8 @@ class ItemList:
         for spawn_d in spawn_data:
             item_code = spawn_d["itemCode"]
             spawn_dict.setdefault(spawn_d["itemCode"], dict())
+            if spawn_d["areaType"] in area_rename:
+                spawn_d["areaType"] = area_rename[spawn_d["areaType"]]
             spawn_dict[item_code].setdefault("areaType", []).append(spawn_d["areaType"])
             spawn_dict[item_code].setdefault("areaCode", []).append(spawn_d["areaCode"])
             spawn_dict[item_code].setdefault("dropCount", []).append(spawn_d["dropCount"])
@@ -162,6 +189,9 @@ class Item:
     def get_english_name(self, english_dict):
         if self.code in english_dict:
             self.name = english_dict[self.code]["Name"]
+
+        if self.name in item_rename:
+            self.name = item_rename[self.name]
 
     def add_spawn_data(self, spawn_dict):
         if self.code in spawn_dict:
